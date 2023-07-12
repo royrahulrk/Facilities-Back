@@ -17,13 +17,13 @@ app.use(cors({
 
 // Configuration for facilities
 const facilities = [
-  { name: 'Clubhouse', slots: [{ start: 10, end: 16, rate: 100 }, { start: 16, end: 22, rate: 500 }] },
-  { name: 'Tennis Court', slots: [{ start: 0, end: 24, rate: 50 }] }
+  { facilityName: 'Clubhouse', slots: [{ start: 10, end: 16, rate: 100 }, { start: 16, end: 22, rate: 500 }] },
+  { facilityName: 'Tennis Court', slots: [{ start: 0, end: 24, rate: 50 }] }
 ];
 
 const bookings = [];
 app.post('/', (req, res) => {
-  let { facility, date, startTime, endTime } = req.body;
+  let {name, facility, date, startTime, endTime } = req.body;
 
 
 
@@ -39,7 +39,7 @@ app.post('/', (req, res) => {
   // Check if the facility is already booked for the given time slot
   for (const booking of bookings) {
     if (
-      booking.facility === facility &&
+      booking.facilityName === facility &&
       booking.date === date &&
       booking.startTime <= startTime &&
       booking.endTime >= endTime
@@ -49,8 +49,9 @@ app.post('/', (req, res) => {
   }
 
   // Find the facility configuration
-  const facilityConfig = facilities.find((f) => f.name === facility);
+  const facilityConfig = facilities.find((value) => value.facilityName === facility);
   if (!facilityConfig) {
+    console.log('Facility not found:', facility);
     return res.status(404).json({ message: 'Booking Failed, Facility Not Found' });
   }
 
@@ -64,9 +65,9 @@ app.post('/', (req, res) => {
   }
 
   // Add the booking record
-  bookings.push({ facility, date, startTime, endTime, amount: bookingAmount });
-  console.log(bookings)
-  res.status(200).json({ message: 'Booked', amount: bookingAmount });
+  bookings.push({name, facility, date, startTime, endTime, amount: bookingAmount });
+  console.log('Bookings:', bookings);
+  res.status(200).json({ message: 'Booked', amount: bookingAmount,"data": bookings});
 });
 
 app.listen(port,()=>{
