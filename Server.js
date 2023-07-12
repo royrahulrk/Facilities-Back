@@ -23,7 +23,18 @@ const facilities = [
 
 const bookings = [];
 app.post('/', (req, res) => {
-  const { facility, date, startTime, endTime } = req.body;
+  let { facility, date, startTime, endTime } = req.body;
+
+
+
+  date = parseInt(date);
+  startTime = parseInt(startTime);
+  endTime = parseInt(endTime);
+
+  // Check if the converted values are valid integers
+  if (isNaN(date) || isNaN(startTime) || isNaN(endTime)) {
+    return res.status(400).json({ message: 'Invalid date or time' });
+  }
 
   // Check if the facility is already booked for the given time slot
   for (const booking of bookings) {
