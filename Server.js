@@ -10,6 +10,10 @@ app.use(bodyParser.urlencoded({
 }));
 
 
+app.use(cors({
+  origin: '*'
+}));
+
 
 // Configuration for facilities
 const facilities = [
