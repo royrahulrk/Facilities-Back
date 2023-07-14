@@ -22,18 +22,19 @@ const facilities = [
 ];
 
 const bookings = [];
+const slotbooklist = [];
+
+
+
 app.post('/', (req, res) => {
-  let {name, facility, date, startTime, endTime } = req.body;
+  let { name, facility, date, startTime, endTime } = req.body;
 
-
-
-  date = parseInt(date);
   startTime = parseInt(startTime);
   endTime = parseInt(endTime);
 
   // Check if the converted values are valid integers
-  if (isNaN(date) || isNaN(startTime) || isNaN(endTime)) {
-    return res.status(400).json({ message: 'Invalid date or time' });
+  if (isNaN(startTime) || isNaN(endTime)) {
+    return res.status(400).json({ message: 'Invalid time' });
   }
 
   // Check if the facility is already booked for the given time slot
@@ -41,10 +42,9 @@ app.post('/', (req, res) => {
     if (
       booking.facilityName === facility &&
       booking.date === date &&
-      booking.startTime <= startTime &&
-      booking.endTime >= endTime
+      !(endTime <= booking.startTime || startTime >= booking.endTime)
     ) {
-      return res.status(400).json({ message: 'Booking Failed, Already Booked' });
+      return res.status(400).json({ message: 'Booking Failed, Slot Already Booked' });
     }
   }
 
@@ -63,12 +63,49 @@ app.post('/', (req, res) => {
       break;
     }
   }
+  for (const booking of bookings) {
+    if (booking.date === date &&
+      !(endTime <= booking.startTime || startTime >= booking.endTime)) {
+        slotbooklist.push(true);
+
+      return res.status(400).json({ message: 'Booking Failed, Slot Already Booked' });
+    }
+    else 
+    {
+      slotbooklist.push(false);
+    }
+  }
 
   // Add the booking record
-  bookings.push({name, facility, date, startTime, endTime, amount: bookingAmount });
+  const newBooking = { name, facility, date, startTime, endTime, amount: bookingAmount };
+
+  // Check if the same time slot is already booked
+
+ const isSlot= slotbooklist.find=(booking)=>booking===false
+  if(isSlot){
+    const conflictingBooking = bookings.find(
+      (booking) =>
+        booking.facilityName === facility &&
+        booking.startTime === startTime &&
+        booking.date === date && 
+        booking.endTime === endTime
+    );
+    if (conflictingBooking) {
+      return res.status(400).json({ message: 'Booking Failed, Slot Already Booked' });
+    }
+
+  }else{
+    return res.status(400).json({ message: 'Booking Failed, Slot Already Booked' });
+  }
+  
+
+ 
+
+  bookings.push(newBooking);
   console.log('Bookings:', bookings);
-  res.status(200).json({ message: 'Booked', amount: bookingAmount,"data": bookings});
+  res.status(200).json({ message: 'Booked', amount: bookingAmount, data: bookings });
 });
+ 
 
 app.listen(port,()=>{
     console.log("server is running on ",port)
